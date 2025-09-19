@@ -13,7 +13,6 @@ dependencies = [
     "python-pptx>=0.6",
     "pillow",
     "jinja2",
-    "argparse",
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
