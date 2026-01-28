@@ -52,11 +52,7 @@
 
       /* Toolbar plugin */
       .impress-enabled div#impress-toolbar {
-          position: fixed;
-          right: 1px;
-          bottom: 1px;
-          opacity: 0.6;
-          z-index: 10;
+          display: none;
       }
       .impress-enabled div#impress-toolbar > span {
           margin-right: 10px;
@@ -276,6 +272,12 @@
           display: block;
       }
 
+      /*
+          Make SVG elements pass through click events to the slide
+      */
+      .step svg {
+          pointer-events: none;
+      }
 
       /*
         Fade-in/out is a straightforward fade. Give it enough seconds that all browsers render it clearly.
@@ -381,7 +383,7 @@
 
 <div id="impress" data-transition-duration="0" data-perspective="0">
     {% for page_no in page_iter %}
-    <div class="step slide">
+    <div class="step slide" data-x="{{ page_no * 1920 }}">
       {# insert svg image #}
       {{ images[page_no] | safe }}
       {# add note #}
@@ -423,7 +425,43 @@
 //# sourceMappingURL=/sm/5a8777bf552b4b80d93fa30d943d3bd7c54f7209870583d74e00f26ece7e2a0d.map
 </script>
 {% endraw %}
-<script>impress().init();</script>
+<script>
+impress().init();
+
+document.addEventListener('click', function(event) {
+    var api = impress();
+    if (event.target.closest('#impress-toolbar') || event.target.closest('#impress-help')) {
+        return;
+    }
+    
+    var steps = document.querySelectorAll('.step');
+    var currentStep = document.querySelector('.step.active');
+    var currentIndex = Array.from(steps).indexOf(currentStep);
+    
+    if (currentIndex < steps.length - 1) {
+        api.next();
+    }
+}, false);
+
+document.addEventListener('wheel', function(event) {
+    event.preventDefault();
+    
+    var api = impress();
+    var steps = document.querySelectorAll('.step');
+    var currentStep = document.querySelector('.step.active');
+    var currentIndex = Array.from(steps).indexOf(currentStep);
+    
+    if (event.deltaY > 0) {
+        if (currentIndex < steps.length - 1) {
+            api.next();
+        }
+    } else if (event.deltaY < 0) {
+        if (currentIndex > 0) {
+            api.prev();
+        }
+    }
+}, { passive: false });
+</script>
 
 </body>
 </html>
